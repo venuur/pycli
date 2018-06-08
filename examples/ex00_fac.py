@@ -9,7 +9,7 @@ def factorial(n: int):
         n (int): Integer to calculate factorial of.
 
     Returns:
-        int: Factorial of argument.
+        int: n!, the factorial of n.
     '''
 
     n = int(n)
