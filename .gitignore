@@ -1,0 +1,6 @@
+venv/
+*.pyc
+*.ipynb
+*.egg-info/
+.idea/
+.ipynb_checkpoints/
