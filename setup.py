@@ -8,5 +8,9 @@ setup(
     license='',
     author='Carl Morris',
     author_email='carl.morris.world@outlook.com',
-    description='Automagic CLIs for python functions'
+    description='Automagic CLIs for python functions',
+    install_requires=[
+        'pandas',
+        'matplotlib'
+    ]
 )

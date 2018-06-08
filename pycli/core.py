@@ -1,9 +1,12 @@
 from argparse import ArgumentParser
+from functools import partial
 
 import sys
 import inspect
 
 class _CliApplication:
+    _default_command_writer = partial(print, file=sys.stdout)
+
     def __init__(self):
         self._parser = ArgumentParser()
         self._parser.add_argument(
@@ -15,9 +18,11 @@ class _CliApplication:
             dest='_command',
             help='Function to call.'
         )
-        self._command_parsers = list()
+        self._command_parsers = dict()
         self._command_funcs = dict()
         self._command_func_args = dict()
+        self._command_writer = dict()
+        self._command_writer_args = dict()
 
     @staticmethod
     def _parse_docstring(func):
@@ -55,7 +60,7 @@ class _CliApplication:
             'ret':  ret_parts
         }
 
-    def _add_func_subparser(self, func):
+    def _add_func_subparser(self, func, output=None):
         doc = self._parse_docstring(func)
 
         command = self._subparser.add_parser(
@@ -66,7 +71,7 @@ class _CliApplication:
                 doc['ret']['desc'][0].lower() +
                 doc['ret']['desc'][1:]]))
         self._command_funcs[func.__name__] = func
-        func_args = self._command_func_args.get(func.__name__, set())
+        func_args = self._command_func_args.setdefault(func.__name__, set())
         parameters = inspect.signature(func).parameters
         for p in parameters:
             command.add_argument(
@@ -75,7 +80,20 @@ class _CliApplication:
             )
             func_args.add(p)
             print('DEBUG', command)
-        self._command_parsers.append(command)
+
+        if output is None:
+            self._command_writer[func.__name__] = self._default_command_writer
+            self._command_writer_args[func.__name__] = set()
+        elif output == 'plot':
+            self._command_writer[func.__name__] = _plot_saver
+            command.add_argument(
+                '--filename', '-f',
+                dest='_filename',
+                help='Filename to save plot to.'
+            )
+            self._command_writer_args[func.__name__] = {'_filename'}
+
+        self._command_parsers[func.__name__] = command
 
     def run(self, argstr:str=None):
         if argstr is None:
@@ -100,7 +118,14 @@ class _CliApplication:
             for argname, value in args.__dict__.items()
             if argname in func_kwargs
         }
-        print(self._command_funcs[args._command](**kwargs), file=sys.stdout)
+        func_ret = self._command_funcs[args._command](**kwargs)
+        command_writer_args = self._command_writer_args[args._command]
+        writer_kwargs = {
+            argname: value
+            for argname, value in args.__dict__.items()
+            if argname in command_writer_args
+        }
+        self._command_writer[args._command](func_ret)
 
     def _run_batch(self, batchfile:str=None):
         if str is not None:
@@ -114,9 +139,17 @@ class _CliApplication:
 application = _CliApplication()
 
 
-def add_cli(func):
-    application._add_func_subparser(func)
-    return func
+def _plot_saver(void_ret, filename='plot.png'):
+    from matplotlib.pyplot import savefig
+
+    savefig(filename)
+
+
+def add_cli(output=None):
+    def _add_cli(func):
+        application._add_func_subparser(func, output=output)
+
+    return _add_cli
 
 def run_application(argstr=None):
     application.run(argstr)
