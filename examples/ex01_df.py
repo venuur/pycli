@@ -5,8 +5,8 @@ import pandas as pd
 @add_cli(output='plot')
 def plot_columns(
         df:pd.DataFrame,
-        index_col:str, value_col:str) -> type(None):
-    '''Plots a value column vs. and index column for a given data frame.
+        index_col, value_col) -> type(None):
+    '''Plots a value column vs. an index column for a given data frame.
 
     Args:
         df (pd.DataFrame): Data frame to use as source for plot.

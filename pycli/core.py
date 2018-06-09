@@ -1,10 +1,12 @@
 from argparse import ArgumentParser
 from functools import partial
+from typing import get_type_hints
 
 import pandas as pd
 
 import sys
 import inspect
+import builtins
 
 class _CliApplication:
     _default_command_writer = partial(print, file=sys.stdout)
@@ -31,7 +33,7 @@ class _CliApplication:
 
     def _add_func_subparser(self, func, output=None):
         doc = _parse_docstring(func)
-        func_types = func.__annotations__
+        func_types = get_type_hints(func)
         func_name = func.__name__
 
         command = self._subparser.add_parser(
@@ -45,11 +47,22 @@ class _CliApplication:
         func_args = self._command_func_args.setdefault(func_name, set())
         parameters = inspect.signature(func).parameters
         for p in parameters:
+            # Read types from docstring and then annotations, prioritizing annonations.
             p_type = {
                 'type': self._special_arg_types.get(t, t)
                 for name, t in func_types.items()
                 if name == p
             }
+            if len(p_type) == 0:
+                p_typestr = doc['args'][p].get('type', None)
+                try:
+                    p_type_val = getattr(builtins, p_typestr)
+                    p_type = {
+                        'type': self._special_arg_types.get(p_type_val, p_type_val)
+                    }
+                except AttributeError:
+                    pass # Nothing to do, p_type is an empty dict since we couldn't infer the type from the type string.
+
             print('DEBUG p_type', p_type)
             command.add_argument(
                 p,
@@ -129,7 +142,7 @@ def _parse_docstring(func):
 
         a_name, a_type = a_name_type.split()
         a_name = a_name.strip()
-        a_type = a_type.strip()
+        a_type = a_type.strip().strip('()')
         arg_parts[a_name] = {
             'name': a_name,
             'type': a_type,
