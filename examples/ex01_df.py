@@ -4,7 +4,7 @@ import pandas as pd
 
 @add_cli(output='plot')
 def plot_columns(
-        #df:pd.DataFrame,
+        df:pd.DataFrame,
         index_col:str, value_col:str) -> type(None):
     '''Plots a value column vs. and index column for a given data frame.
 
@@ -18,7 +18,7 @@ def plot_columns(
     '''
 
     # TODO: Until I add a load dataframe feature to add_cli.
-    df = pd.DataFrame({index_col: [1, 4, 9], value_col: [6, 2, 10]})
+    #df = pd.DataFrame({index_col: [1, 4, 9], value_col: [6, 2, 10]})
     df.set_index(index_col)[value_col].plot()
 
 

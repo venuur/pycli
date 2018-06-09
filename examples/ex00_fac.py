@@ -1,8 +1,8 @@
 from pycli import run_application, add_cli
 
 
-@add_cli
-def factorial(n: int):
+@add_cli()
+def factorial(n: int) -> int:
     '''Calculates factorial of nonnegative integer n.
 
     Args:
@@ -12,7 +12,6 @@ def factorial(n: int):
         int: n!, the factorial of n.
     '''
 
-    n = int(n)
     if n < 0:
         print('Factorial argument n must be a natural number.')
         raise ValueError
