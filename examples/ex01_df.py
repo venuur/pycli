@@ -21,6 +21,19 @@ def plot_columns(
     #df = pd.DataFrame({index_col: [1, 4, 9], value_col: [6, 2, 10]})
     df.set_index(index_col)[value_col].plot()
 
+@add_cli()
+def avg_columns(df:pd.DataFrame) -> pd.Series:
+    '''Calculates mean of all columns in DataFrame.
+
+    Args:
+        df: Data frame of values to average.
+
+    Returns:
+        Series of means indexed by columns.
+    '''
+
+    return df.mean()
+
 
 if __name__ == '__main__':
     run_application()

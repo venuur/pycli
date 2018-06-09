@@ -140,18 +140,30 @@ def _parse_docstring(func):
         a_name_type, a_desc = arg.split(':')
         a_desc = a_desc.strip()
 
-        a_name, a_type = a_name_type.split()
-        a_name = a_name.strip()
-        a_type = a_type.strip().strip('()')
+        try:
+            a_name, a_type = a_name_type.split()
+            a_type = a_type.strip().strip('()')
+            a_name = a_name.strip()
+        except ValueError:
+            # Unable to split, means most likely that there are not types.
+            a_type = None
+            a_name = a_name_type.strip()
+
         arg_parts[a_name] = {
             'name': a_name,
             'type': a_type,
             'desc': a_desc
         }
 
-    ret_type, ret_desc = ret_raw.strip().split(':')
-    ret_type = ret_type.strip()
-    ret_desc = ret_desc.strip()
+    try:
+        ret_type, ret_desc = ret_raw.strip().split(':')
+        ret_type = ret_type.strip()
+        ret_desc = ret_desc.strip()
+    except ValueError:
+        # Unable to split, means most likely that there is not a return type specified.
+        ret_type = None
+        ret_desc = ret_raw.strip()
+
     ret_parts = {
         'type': ret_type,
         'desc': ret_desc

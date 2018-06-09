@@ -2,14 +2,14 @@ from pycli import run_application, add_cli
 
 
 @add_cli()
-def factorial(n):
+def factorial(n:int) -> int:
     '''Calculates factorial of nonnegative integer n.
 
     Args:
-        n (int): Integer to calculate factorial of.
+        n: Integer to calculate factorial of.
 
     Returns:
-        int: n!, the factorial of n.
+        n!, the factorial of n.
     '''
 
     if n < 0:
